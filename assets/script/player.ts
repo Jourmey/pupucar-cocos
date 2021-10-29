@@ -3,6 +3,7 @@ import { _decorator, Component, Node, RigidBody2D, KeyCode } from 'cc';
 const { ccclass, property } = _decorator;
 
 import { AxInput } from './AxInput';
+import { GameManager } from './GameManager';
 const Input = AxInput.instance;
 
 /**
@@ -26,16 +27,91 @@ export class Player extends Component {
     // @property
     // serializableDummy = 0;
 
+    private r2d: RigidBody2D;
+    private code: PlayCode = PlayCode.NONE;
+
+
     start() {
+        this.r2d = this.getComponent(RigidBody2D);
         // [3]
+        GameManager.Instance().onRecvFrame = event => {
+            if (event != null && event.data != null && event.data.frame != null) {
+                event.data.frame.items.forEach(element => {
+                    var keyCode = element.data as PosFrame
+                    this.move(keyCode)
+                });
+            }
+
+        }
     }
 
     update(deltaTime: number) {
-        // [4]
-        let speed = 8;
+        if (GameManager.Instance().GetGaing() == true) {
+            this.sendMove();
+        } else {
+            this.testMove();
+        }
+    }
 
-        let rb = this.getComponent(RigidBody2D);
-        let lv = rb!.linearVelocity;
+    sendMove() {
+        if (Input.is_action_pressed(KeyCode.ARROW_LEFT)) {
+            this.sendFrame(PlayCode.LEFT)
+        } else if (Input.is_action_pressed(KeyCode.ARROW_RIGHT)) {
+            this.sendFrame(PlayCode.RIGHT)
+        } else {
+            if (Input.is_action_pressed(KeyCode.ARROW_DOWN)) {
+                this.sendFrame(PlayCode.DOWN)
+            } else if (Input.is_action_pressed(KeyCode.ARROW_UP)) {
+                this.sendFrame(PlayCode.UP)
+            } else {
+                this.sendFrame(PlayCode.STOP)
+            }
+        }
+    }
+
+    sendFrame(code: PlayCode) {
+        if (this.code != code) {
+            GameManager.Instance().SendFrame({
+                KeyCode: code,
+            });
+        }
+        this.code = code;
+    }
+
+
+    move(f: PosFrame) {
+        console.log("<<<<<" + f.KeyCode);
+        let speed = 8;
+        let lv = this.r2d!.linearVelocity;
+        switch (f.KeyCode) {
+            case PlayCode.STOP:
+                lv.y = 0;
+                lv.x = 0;
+                break;
+            case PlayCode.LEFT:
+                lv.x = -speed;
+                lv.y = 0;
+                break;
+            case PlayCode.RIGHT:
+                lv.x = speed;
+                lv.y = 0;
+                break;
+            case PlayCode.DOWN:
+                lv.x = 0;
+                lv.y = -speed;
+                break;
+            case PlayCode.UP:
+                lv.x = 0;
+                lv.y = speed;
+                break;
+        }
+        this.r2d!.linearVelocity = lv;
+    }
+
+    // 单机测试
+    testMove() {
+        let speed = 8;
+        let lv = this.r2d!.linearVelocity;
 
         if (Input.is_action_pressed(KeyCode.ARROW_LEFT)) {
             lv.x = -speed;
@@ -53,13 +129,24 @@ export class Player extends Component {
                 lv.y = 0;
             }
         }
-
-        // if (Input.is_action_pressed(KeyCode.KEY_Q)) {
-        //     this.node.angle += 1
-        // }
-
-        rb!.linearVelocity = lv;
+        this.r2d!.linearVelocity = lv;
     }
+
+}
+
+
+
+export enum PlayCode {
+    NONE = 0,
+    UP = 1,
+    DOWN = 2,
+    LEFT = 3,
+    RIGHT = 4,
+    STOP = 5,
+}
+
+export interface PosFrame {
+    KeyCode: PlayCode;
 }
 
 /**
