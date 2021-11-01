@@ -28,7 +28,7 @@ export class GameManager extends Component {
     private static instance: GameManager;
 
     private room: MGOBE.Room = new MGOBE.Room();
-    private playerName: string = Date.now().toString(36);
+    private playerName: string = "jourmey";
     private gameState = GameState.Start;
 
     // public onRecvPlayerFrame: (event: MGOBE.types.BroadcastEvent<RFrame[]>) => any;

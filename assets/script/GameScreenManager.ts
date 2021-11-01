@@ -36,12 +36,12 @@ export class GameScreenUIEvent extends Component {
     // 用户
     @property({ type: Prefab })
     Player: Prefab | null = null;
-    private scriptPlayer: Player;
+    private player: PlayerNode = null;
+
     // 队友
     @property({ type: Prefab })
     Teammate: Prefab | null = null;
-    private scriptTeammate: Teammate;
-
+    private teammates: { [key: string]: TeammateNode } = {};
 
     start() {
         this.Button_Init?.node.on(Node.EventType.TOUCH_START, this.Button_Init_Click);
@@ -49,24 +49,20 @@ export class GameScreenUIEvent extends Component {
         this.Button_StartGame?.node.on(Node.EventType.TOUCH_START, this.Button_StartGame_Click);
         this.EditBox_PlayId?.node.on("text-changed", this.callback, this);
 
-        var player = instantiate(this.Player!) as Node;
-        this.scriptPlayer = player.getComponent(Player);
-        this.scriptPlayer.test();
-        this.node.addChild(player);
-
-        var teammate = instantiate(this.Teammate!) as Node;
-        this.scriptTeammate = teammate.getComponent(Teammate);
-        this.scriptTeammate.test();
-        this.node.addChild(teammate);
 
         GameManager.Instance().onRecvPlayersFrame = event => {
             event.data.items.forEach(e => {
                 let f = e.data as Frame
                 if (e.playerId == GameManager.Instance().GetPlayerId()) {
-                    this.scriptPlayer.Move(f);
+                    this.player.Script.Move(f);
                     console.log("m <= " + e.playerId, f);
                 } else {
-                    this.scriptTeammate.Move(f);
+
+                    let t = this.teammates[e.playerId]
+                    if (t != null && t.Init == true) {
+                        t.Script.Move(f)
+                    }
+
                     console.log("o <= " + e.playerId, f);
                 }
             });
@@ -79,9 +75,56 @@ export class GameScreenUIEvent extends Component {
                     console.log(e.id, e.name);
                 })
                 console.log("----------");
+
+
+                // 清理 
+                if (this.player != null && this.player.Init == true) {
+                    this.node.removeChild(this.player.Node);
+                    this.player.Init = false
+                }
+
+                for (const key in this.teammates) {
+                    const element = this.teammates[key];
+                    if (element != null && element.Init == true) {
+                        this.node.removeChild(element.Node);
+                        element.Init = false
+                    }
+                }
+
+                // 新增
+                event.data.playerList.forEach(e => {
+                    this.addPlayer(e.id != GameManager.Instance().GetPlayerId(), e.id)
+                })
             }
         }
     }
+
+
+    addPlayer(teammate: boolean, id: string) {
+        if (teammate) {
+            let node = instantiate(this.Teammate!) as Node;
+            let script = node.getComponent(Teammate);
+            script.test();
+            this.teammates[id] = {
+                Node: node,
+                Script: script,
+                Init: true,
+            };
+            this.node.addChild(node);
+        } else {
+            let node = instantiate(this.Player!) as Node;
+            let script = node.getComponent(Player);
+            script.test();
+            this.player = {
+                Id: id,
+                Node: node,
+                Script: script,
+                Init: true,
+            };
+            this.node.addChild(node);
+        }
+    }
+
 
     callback(editbox: EditBox) {
         GameManager.Instance().SetPlayerName(editbox.string);
@@ -101,6 +144,20 @@ export class GameScreenUIEvent extends Component {
     // update (deltaTime: number) {
     //     // [4]
     // }
+}
+
+export interface PlayerNode {
+    Init: boolean;
+    Id: string;
+    Node: Node;
+    Script: Player;
+}
+
+
+export interface TeammateNode {
+    Init: boolean;
+    Node: Node;
+    Script: Teammate;
 }
 
 /**
