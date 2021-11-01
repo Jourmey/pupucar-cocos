@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, game, } from 'cc';
 const { ccclass, property } = _decorator;
 import Config from './Config';
-
+import { PlayCode, Frame } from './Config';
 
 enum GameState {
     Start = 0,
@@ -28,10 +28,12 @@ export class GameManager extends Component {
     private static instance: GameManager;
 
     private room: MGOBE.Room = new MGOBE.Room();
-    private playerId: string = Date.now().toString(36);
+    private playerName: string = Date.now().toString(36);
     private gameState = GameState.Start;
 
-    public onRecvFrame: (event: MGOBE.types.BroadcastEvent<MGOBE.types.RecvFrameBst>) => any;
+    // public onRecvPlayerFrame: (event: MGOBE.types.BroadcastEvent<RFrame[]>) => any;
+    public onRecvPlayersFrame: (event: MGOBE.types.BroadcastEvent<MGOBE.types.Frame>) => any;
+    public onRoomInfoChange: (event: MGOBE.types.BroadcastEvent<MGOBE.types.RoomInfo>) => any;
 
     public static Instance(): GameManager {
         if (!this.instance) {
@@ -44,10 +46,15 @@ export class GameManager extends Component {
         GameManager.instance = this;
     }
 
-    SetPlayerId(playerId: string) {
-        this.playerId = playerId
+    SetPlayerName(playerId: string) {
+        this.playerName = playerId
         console.log("用户名修改为:" + playerId);
     }
+
+    GetPlayerId(): string {
+        return MGOBE.Player.id;
+    }
+
 
     start() {
         game.addPersistRootNode(this.node);
@@ -57,8 +64,17 @@ export class GameManager extends Component {
     InitMGOBE() {
         this.room.onUpdate = event => {
             console.log("房间状态变更:" + event.roomInfo.customProperties);
+            if (event.roomInfo.customProperties == Config.GAMING) {
+                this.gameState = GameState.Gaming;
+                console.log("其他玩家开启游戏");
+            }
         }
         this.room.onJoinRoom = event => {
+            this.onRoomInfoChange({
+                data: event.data?.roomInfo,
+                seq: event.seq,
+            });
+
             console.log("新玩家加入:" + event.data.joinPlayerId);
         }
         // 接受客户端消息广播
@@ -66,15 +82,18 @@ export class GameManager extends Component {
             console.log("接受客户端消息广播:" + event.data.msg);
         }
         // 房间帧消息广播回调接口
+        // 回调帧同步
         this.room.onRecvFrame = event => {
-            // 回调帧同步
-            this.onRecvFrame(event)
+            if (event != null && event.data != null && event.data.frame != null &&
+                event.data.frame.items != null && event.data.frame.items.length != 0) {
+                this.onRecvPlayersFrame({ data: event.data.frame, seq: event.seq })
+            }
             // console.log("<<<<<" + event.data.frame);
         }
 
         const gameInfoPara: MGOBE.types.GameInfoPara = {
             gameId: Config.gameId,
-            openId: this.playerId,
+            openId: this.playerName,
             secretKey: Config.secretKey,
         }
 
@@ -97,7 +116,7 @@ export class GameManager extends Component {
         this.room?.changeRoom({});
 
         const playerInfo: MGOBE.types.PlayerInfoPara = {
-            name: this.playerId,
+            name: this.playerName,
             customPlayerStatus: 1,
             customProfile: "",
         }
@@ -110,9 +129,14 @@ export class GameManager extends Component {
 
         this.room?.matchRoom(roomPara, event => {
             if (event.code == MGOBE.ErrCode.EC_OK) {
+                this.onRoomInfoChange({
+                    data: event.data?.roomInfo,
+                    seq: event.seq,
+                });
+
                 console.log("匹配成功 ID:" + event.data?.roomInfo.id);
-                console.log("当前房间玩家列表：" + event.data?.roomInfo.playerList);
-                console.log("MGOBE.Player.id" + MGOBE.Player.id);
+                // console.log("当前房间玩家列表：" + event.data?.roomInfo.playerList);
+                // console.log("MGOBE.Player.id" + MGOBE.Player.id);
             }
         })
     }
@@ -131,7 +155,7 @@ export class GameManager extends Component {
     }
 
 
-    SendFrame(frame: object) {
+    SendFrame(frame: Frame) {
         if (this.GetGaing() == false) {
             return
         }

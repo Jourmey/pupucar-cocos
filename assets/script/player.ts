@@ -4,6 +4,8 @@ const { ccclass, property } = _decorator;
 
 import { AxInput } from './AxInput';
 import { GameManager } from './GameManager';
+import { PlayCode, Frame } from './Config';
+
 const Input = AxInput.instance;
 
 /**
@@ -33,15 +35,26 @@ export class Player extends Component {
 
     start() {
         this.r2d = this.getComponent(RigidBody2D);
-        // [3]
-        GameManager.Instance().onRecvFrame = event => {
-            if (event != null && event.data != null && event.data.frame != null) {
-                event.data.frame.items.forEach(element => {
-                    var keyCode = element.data as PosFrame
-                    this.move(keyCode)
-                });
-            }
 
+        GameManager.Instance().onRecvPlayersFrame = event => {
+            event.data.items.forEach(e => {
+                if (e.playerId == GameManager.Instance().GetPlayerId()) {
+                    this.move(e.data as Frame);
+                    console.log("m <= " + e.playerId, e.data as Frame);
+                } else {
+                    console.log("o <= " + e.playerId, e.data as Frame);
+                }
+            });
+        }
+
+        GameManager.Instance().onRoomInfoChange = event => {
+            if (event != null && event.data != null) {
+                console.log("-----当前用户列表-----");
+                event.data.playerList.forEach(e => {
+                    console.log(e.id, e.name);
+                })
+                console.log("----------");
+            }
         }
     }
 
@@ -79,8 +92,8 @@ export class Player extends Component {
     }
 
 
-    move(f: PosFrame) {
-        console.log("<<<<<" + f.KeyCode);
+    move(f: Frame) {
+        // console.log("<<<<<" + f.KeyCode);
         let speed = 8;
         let lv = this.r2d!.linearVelocity;
         switch (f.KeyCode) {
@@ -134,20 +147,6 @@ export class Player extends Component {
 
 }
 
-
-
-export enum PlayCode {
-    NONE = 0,
-    UP = 1,
-    DOWN = 2,
-    LEFT = 3,
-    RIGHT = 4,
-    STOP = 5,
-}
-
-export interface PosFrame {
-    KeyCode: PlayCode;
-}
 
 /**
  * [1] Class member could be defined like this.

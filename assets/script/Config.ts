@@ -16,3 +16,18 @@ export default {
     START,
     GAMING,
 };
+
+
+
+export enum PlayCode {
+    NONE = 0,
+    UP = 1,
+    DOWN = 2,
+    LEFT = 3,
+    RIGHT = 4,
+    STOP = 5,
+}
+
+export interface Frame {
+    KeyCode: PlayCode;
+}

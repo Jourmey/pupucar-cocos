@@ -38,7 +38,7 @@ export class GameScreenUIEvent extends Component {
     }
 
     callback(editbox: EditBox) {
-        GameManager.Instance().SetPlayerId(editbox.string);
+        GameManager.Instance().SetPlayerName(editbox.string);
     }
 
     Button_Init_Click() {
