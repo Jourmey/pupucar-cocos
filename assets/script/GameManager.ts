@@ -70,10 +70,12 @@ export class GameManager extends Component {
             }
         }
         this.room.onJoinRoom = event => {
-            this.onRoomInfoChange({
-                data: event.data?.roomInfo,
-                seq: event.seq,
-            });
+            if (this.onRoomInfoChange != null) {
+                this.onRoomInfoChange({
+                    data: event.data?.roomInfo,
+                    seq: event.seq,
+                });
+            }
 
             console.log("新玩家加入:" + event.data.joinPlayerId);
         }
@@ -86,7 +88,9 @@ export class GameManager extends Component {
         this.room.onRecvFrame = event => {
             if (event != null && event.data != null && event.data.frame != null &&
                 event.data.frame.items != null && event.data.frame.items.length != 0) {
-                this.onRecvPlayersFrame({ data: event.data.frame, seq: event.seq })
+                if (this.onRecvPlayersFrame != null) {
+                    this.onRecvPlayersFrame({ data: event.data.frame, seq: event.seq })
+                }
             }
             // console.log("<<<<<" + event.data.frame);
         }
@@ -129,11 +133,12 @@ export class GameManager extends Component {
 
         this.room?.matchRoom(roomPara, event => {
             if (event.code == MGOBE.ErrCode.EC_OK) {
-                this.onRoomInfoChange({
-                    data: event.data?.roomInfo,
-                    seq: event.seq,
-                });
-
+                if (this.onRoomInfoChange != null) {
+                    this.onRoomInfoChange({
+                        data: event.data?.roomInfo,
+                        seq: event.seq,
+                    });
+                }
                 console.log("匹配成功 ID:" + event.data?.roomInfo.id);
                 // console.log("当前房间玩家列表：" + event.data?.roomInfo.playerList);
                 // console.log("MGOBE.Player.id" + MGOBE.Player.id);

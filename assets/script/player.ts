@@ -35,27 +35,6 @@ export class Player extends Component {
 
     start() {
         this.r2d = this.getComponent(RigidBody2D);
-
-        GameManager.Instance().onRecvPlayersFrame = event => {
-            event.data.items.forEach(e => {
-                if (e.playerId == GameManager.Instance().GetPlayerId()) {
-                    this.move(e.data as Frame);
-                    console.log("m <= " + e.playerId, e.data as Frame);
-                } else {
-                    console.log("o <= " + e.playerId, e.data as Frame);
-                }
-            });
-        }
-
-        GameManager.Instance().onRoomInfoChange = event => {
-            if (event != null && event.data != null) {
-                console.log("-----当前用户列表-----");
-                event.data.playerList.forEach(e => {
-                    console.log(e.id, e.name);
-                })
-                console.log("----------");
-            }
-        }
     }
 
     update(deltaTime: number) {
@@ -64,6 +43,10 @@ export class Player extends Component {
         } else {
             this.testMove();
         }
+    }
+
+    test() {
+        console.log("Player加载成功");
     }
 
     sendMove() {
@@ -92,7 +75,7 @@ export class Player extends Component {
     }
 
 
-    move(f: Frame) {
+    Move(f: Frame) {
         // console.log("<<<<<" + f.KeyCode);
         let speed = 8;
         let lv = this.r2d!.linearVelocity;
