@@ -1,10 +1,10 @@
 
 import { _decorator, instantiate, Component, Node, Button, EditBox, Prefab } from 'cc';
-import { GameManager } from './GameManager';
+import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
-import { Player } from './player';
-import { Teammate } from './teammate';
-import { PlayCode, Frame } from './Config';
+import { Player } from '../player';
+import { Teammate } from '../teammate';
+import { PlayCode, Frame } from '../Config';
 
 /**
  * Predefined variables
@@ -20,19 +20,6 @@ import { PlayCode, Frame } from './Config';
 
 @ccclass('GameScreenUIEvent')
 export class GameScreenUIEvent extends Component {
-
-    @property({ type: Button })
-    Button_Init: Button | null = null;
-
-    @property({ type: Button })
-    Button_MatchRoom: Button | null = null;
-
-    @property({ type: Button })
-    Button_StartGame: Button | null = null;
-
-    @property({ type: EditBox })
-    EditBox_PlayId: EditBox | null = null;
-
     // 用户
     @property({ type: Prefab })
     Player: Prefab | null = null;
@@ -44,12 +31,6 @@ export class GameScreenUIEvent extends Component {
     private teammates: { [key: string]: TeammateNode } = {};
 
     start() {
-        this.Button_Init?.node.on(Node.EventType.TOUCH_START, this.Button_Init_Click);
-        this.Button_MatchRoom?.node.on(Node.EventType.TOUCH_START, this.Button_MatchRoom_Click);
-        this.Button_StartGame?.node.on(Node.EventType.TOUCH_START, this.Button_StartGame_Click);
-        this.EditBox_PlayId?.node.on("text-changed", this.callback, this);
-
-
         GameManager.Instance().onRecvPlayersFrame = event => {
             event.data.items.forEach(e => {
                 let f = e.data as Frame
@@ -68,37 +49,8 @@ export class GameScreenUIEvent extends Component {
             });
         }
 
-        GameManager.Instance().onRoomInfoChange = event => {
-            if (event != null && event.data != null) {
-                console.log("-----当前用户列表-----");
-                event.data.playerList.forEach(e => {
-                    console.log(e.id, e.name);
-                })
-                console.log("----------");
-
-
-                // 清理 
-                if (this.player != null && this.player.Init == true) {
-                    this.node.removeChild(this.player.Node);
-                    this.player.Init = false
-                }
-
-                for (const key in this.teammates) {
-                    const element = this.teammates[key];
-                    if (element != null && element.Init == true) {
-                        this.node.removeChild(element.Node);
-                        element.Init = false
-                    }
-                }
-
-                // 新增
-                event.data.playerList.forEach(e => {
-                    this.addPlayer(e.id != GameManager.Instance().GetPlayerId(), e.id)
-                })
-            }
-        }
+        this.addPlayer(false, "xx")
     }
-
 
     addPlayer(teammate: boolean, id: string) {
         if (teammate) {
@@ -125,28 +77,7 @@ export class GameScreenUIEvent extends Component {
         }
     }
 
-
-    callback(editbox: EditBox) {
-        GameManager.Instance().SetPlayerName(editbox.string);
-    }
-
-    Button_Init_Click() {
-        GameManager.Instance().InitMGOBE();
-
-    }
-    Button_MatchRoom_Click() {
-        GameManager.Instance().MatchRoom();
-    }
-    Button_StartGame_Click() {
-        GameManager.Instance().StartGame();
-    }
-
-    // update (deltaTime: number) {
-    //     // [4]
-    // }
-}
-
-export interface PlayerNode {
+} export interface PlayerNode {
     Init: boolean;
     Id: string;
     Node: Node;

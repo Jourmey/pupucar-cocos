@@ -4,7 +4,7 @@ export const START = "Start";
 export const GAMING = "Gaming";
 
 
-export default {
+export const ConfigInfo = {
     // MGOBE 游戏信息
     gameId: "obg-2bhr36pp",
     secretKey: "42bb3be65c996c92eefdbb5c70ae00886e757270",
@@ -17,7 +17,11 @@ export default {
     GAMING,
 };
 
-
+export enum State {
+    Start = 0,
+    Gaming = 1,
+    End = 2
+}
 
 export enum PlayCode {
     NONE = 0,
