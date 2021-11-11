@@ -49,7 +49,10 @@ export class GameScreenUIEvent extends Component {
             });
         }
 
-        this.addPlayer(false, "xx")
+
+        GameManager.Instance().Room.roomInfo.playerList.forEach(e => {
+            this.addPlayer(e.id != GameManager.Instance().GetPlayerId(), e.id)
+        });
     }
 
     addPlayer(teammate: boolean, id: string) {
@@ -68,7 +71,6 @@ export class GameScreenUIEvent extends Component {
             let script = node.getComponent(Player);
             script.test();
             this.player = {
-                Id: id,
                 Node: node,
                 Script: script,
                 Init: true,
@@ -79,7 +81,6 @@ export class GameScreenUIEvent extends Component {
 
 } export interface PlayerNode {
     Init: boolean;
-    Id: string;
     Node: Node;
     Script: Player;
 }

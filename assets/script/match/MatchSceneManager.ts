@@ -96,7 +96,7 @@ export class MatchSceneManager extends Component {
             })
             console.log("----------");
 
-            this.House.UpdateText(t)
+            this.House?.UpdateText(t)
         }
     }
 }

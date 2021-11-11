@@ -52,25 +52,25 @@ export class House extends Component {
                     this.Label1.string = t[0];
                     break;
                 case 1:
-                    this.Label1.string = t[1];
+                    this.Label2.string = t[1];
                     break;
                 case 2:
-                    this.Label1.string = t[2];
+                    this.Label3.string = t[2];
                     break;
                 case 3:
-                    this.Label1.string = t[3];
+                    this.Label4.string = t[3];
                     break;
                 case 4:
-                    this.Label1.string = t[4];
+                    this.Label5.string = t[4];
                     break;
                 case 5:
-                    this.Label1.string = t[5];
+                    this.Label6.string = t[5];
                     break;
                 case 6:
-                    this.Label1.string = t[6];
+                    this.Label7.string = t[6];
                     break;
                 case 7:
-                    this.Label1.string = t[7];
+                    this.Label8.string = t[7];
                     break;
             }
         }
