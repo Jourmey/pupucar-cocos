@@ -66,7 +66,7 @@ export class MatchSceneManager extends Component {
 
         const roomPara: MGOBE.types.MatchRoomPara = {
             playerInfo,
-            maxPlayers: 2,
+            maxPlayers: 8,
             roomType: ConfigInfo.START,
         };
 

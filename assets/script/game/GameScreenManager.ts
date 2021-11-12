@@ -2,7 +2,7 @@
 import { _decorator, instantiate, Component, Node, Button, EditBox, Prefab } from 'cc';
 import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
-import { Player } from '../player';
+import { Player } from '../desktop_player';
 import { Teammate } from '../teammate';
 import { PlayCode, Frame } from '../Config';
 
