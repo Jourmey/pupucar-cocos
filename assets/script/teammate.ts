@@ -17,15 +17,10 @@ import { PlayCode, Frame } from './Config';
 
 @ccclass('Teammate')
 export class Teammate extends Component {
-    // [1]
-    // dummy = '';
-
-    // [2]
-    // @property
-    // serializableDummy = 0;
-
+    @property
+    speed: number = 5;
     private r2d: RigidBody2D;
-    private speed: number = 8;
+
     start() {
         this.r2d = this.getComponent(RigidBody2D);
     }
