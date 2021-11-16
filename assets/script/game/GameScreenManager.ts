@@ -1,10 +1,13 @@
 
-import { _decorator, instantiate, Component, Node, Button, EditBox, Prefab } from 'cc';
+import { _decorator, instantiate, Component, Node, Prefab } from 'cc';
 import { GameManager } from '../GameManager';
-const { ccclass, property } = _decorator;
 import { Player } from '../desktop_player';
 import { Teammate } from '../teammate';
 import { PlayCode, Frame } from '../Config';
+import { EventManager } from '../eventManager'
+
+
+const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -31,6 +34,10 @@ export class GameScreenUIEvent extends Component {
     private teammates: { [key: string]: TeammateNode } = {};
 
     start() {
+        EventManager.instance().on('joystick-move', (event) => {
+            this.player.Script.SetMoveDirection(event)
+        }, this);
+
         GameManager.Instance().onRecvPlayersFrame = event => {
             event.data.items.forEach(e => {
                 let f = e.data as Frame

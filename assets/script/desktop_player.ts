@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, RigidBody2D, KeyCode } from 'cc';
+import { _decorator, Component, Node, RigidBody2D, KeyCode, Vec2, math } from 'cc';
 const { ccclass, property } = _decorator;
 
 import { AxInput } from './AxInput';
@@ -22,16 +22,13 @@ const Input = AxInput.instance;
 
 @ccclass('Player')
 export class Player extends Component {
-    // [1]
-    // dummy = '';
-
-    // [2]
-    // @property
-    // serializableDummy = 0;
+    @property
+    speed: number = 5;
 
     private r2d: RigidBody2D;
     private code: PlayCode = PlayCode.NONE;
 
+    private _moveDirection: Vec2 | undefined;
 
     start() {
         this.r2d = this.getComponent(RigidBody2D);
@@ -39,7 +36,8 @@ export class Player extends Component {
 
     update(deltaTime: number) {
         if (GameManager.Instance().GetGaing() == true) {
-            this.sendMove();
+            // this.sendMove();
+            this.sendMove2();
         } else {
             this.testMove();
         }
@@ -49,21 +47,45 @@ export class Player extends Component {
         console.log("Player加载成功");
     }
 
-    sendMove() {
-        if (Input.is_action_pressed(KeyCode.ARROW_LEFT)) {
-            this.sendFrame(PlayCode.LEFT)
-        } else if (Input.is_action_pressed(KeyCode.ARROW_RIGHT)) {
-            this.sendFrame(PlayCode.RIGHT)
+    SetMoveDirection(moveDirection: Vec2) {
+        this._moveDirection = moveDirection;
+    }
+
+    sendMove2() {
+        if (!this._moveDirection) {
+            this.sendFrame(PlayCode.STOP)
         } else {
-            if (Input.is_action_pressed(KeyCode.ARROW_DOWN)) {
-                this.sendFrame(PlayCode.DOWN)
-            } else if (Input.is_action_pressed(KeyCode.ARROW_UP)) {
+            let a = this._moveDirection.signAngle(Vec2.UNIT_X);
+            if (a > -Math.PI * 3 / 4 && a <= -Math.PI / 4) { // 上
                 this.sendFrame(PlayCode.UP)
-            } else {
-                this.sendFrame(PlayCode.STOP)
+            }
+            else if (a > -Math.PI / 4 && a <= Math.PI / 4) { // 右
+                this.sendFrame(PlayCode.RIGHT)
+            }
+            else if (a > Math.PI / 4 && a <= Math.PI * 3 / 4) { // 下
+                this.sendFrame(PlayCode.DOWN)
+            } else { // 左
+                this.sendFrame(PlayCode.LEFT)
             }
         }
     }
+
+    // // pc 版本
+    // sendMove() {
+    //     if (Input.is_action_pressed(KeyCode.ARROW_LEFT)) {
+    //         this.sendFrame(PlayCode.LEFT)
+    //     } else if (Input.is_action_pressed(KeyCode.ARROW_RIGHT)) {
+    //         this.sendFrame(PlayCode.RIGHT)
+    //     } else {
+    //         if (Input.is_action_pressed(KeyCode.ARROW_DOWN)) {
+    //             this.sendFrame(PlayCode.DOWN)
+    //         } else if (Input.is_action_pressed(KeyCode.ARROW_UP)) {
+    //             this.sendFrame(PlayCode.UP)
+    //         } else {
+    //             this.sendFrame(PlayCode.STOP)
+    //         }
+    //     }
+    // }
 
     sendFrame(code: PlayCode) {
         if (this.code != code) {
@@ -76,8 +98,6 @@ export class Player extends Component {
 
 
     Move(f: Frame) {
-        // console.log("<<<<<" + f.KeyCode);
-        let speed = 8;
         let lv = this.r2d!.linearVelocity;
         switch (f.KeyCode) {
             case PlayCode.STOP:
@@ -85,20 +105,20 @@ export class Player extends Component {
                 lv.x = 0;
                 break;
             case PlayCode.LEFT:
-                lv.x = -speed;
+                lv.x = -this.speed;
                 lv.y = 0;
                 break;
             case PlayCode.RIGHT:
-                lv.x = speed;
+                lv.x = this.speed;
                 lv.y = 0;
                 break;
             case PlayCode.DOWN:
                 lv.x = 0;
-                lv.y = -speed;
+                lv.y = -this.speed;
                 break;
             case PlayCode.UP:
                 lv.x = 0;
-                lv.y = speed;
+                lv.y = this.speed;
                 break;
         }
         this.r2d!.linearVelocity = lv;

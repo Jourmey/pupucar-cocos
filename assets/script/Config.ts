@@ -1,4 +1,3 @@
-
 export type GameState = "Start" | "Gaming";
 export const START = "Start";
 export const GAMING = "Gaming";
